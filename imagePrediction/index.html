@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Classification</title>
+    <!-- Load TensorFlow.js. This is required to use MobileNet. -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.1"></script>
+    <!-- Load the MobileNet model. -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@1.0.0"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="image-container">
+        <input type="file" id="imageUpload" accept="image/*" style="display: none;" />
+        <label for="imageUpload" id="image-upload-label">Upload an Image</label>
+        <img id="img" crossorigin="anonymous" />
+        <button id="btn">Classify Image</button>
+        <div id="loading"></div>
+        <div id="predictions"></div>
+    </div>
+
+    <script>
+        const img = document.getElementById('img');
+        const fileInput = document.getElementById('imageUpload');
+        const btn = document.getElementById('btn');
+        const loading = document.getElementById('loading');
+        const predictionsDiv = document.getElementById('predictions');
+
+        fileInput.addEventListener('change', (event) => {
+            let file = event.target.files[0];
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                img.src = e.target.result;
+                predictionsDiv.innerHTML = ''; // Clear previous predictions
+            };
+            reader.readAsDataURL(file);
+        });
+
+        btn.addEventListener('click', function() {
+            loading.style.display = 'block';
+            run();
+        });
+
+        async function run() {
+            // Load the model.
+            const model = await mobilenet.load();
+            // Classify the image.
+            const predictions = await model.classify(img);
+            const firstPrediction = predictions[0];
+            predictionsDiv.innerHTML = `<p>Prediction: ${firstPrediction.className} - ${Math.round(firstPrediction.probability * 100)}%</p>`;
+            loading.style.display = 'none';
+        }
+    </script>
+</body>
+</html>
